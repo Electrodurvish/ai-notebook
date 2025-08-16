@@ -27,6 +27,21 @@ app.use((req, res, next) => {
   next();
 });
 
+// Root endpoint
+app.get("/", (req, res) => {
+  console.log(`🏠 [ROOT] Root endpoint accessed`);
+  res.json({ 
+    message: "AI Notes Summarizer API",
+    version: "1.0.0",
+    status: "running",
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: "/health",
+      api: "/api/summary"
+    }
+  });
+});
+
 // Health check endpoint
 app.get("/health", (req, res) => {
   console.log(`💓 [HEALTH] Health check requested`);
