@@ -28,23 +28,30 @@ const retryWithBackoff = async (fn, maxRetries = 3, baseDelay = 1000) => {
 };
 // Enhanced AI Summary Function using Google's Generative AI
 const generateSummary = async (text, customPrompt) => {
+    console.log(`🧠 [AI] Starting generateSummary - textLength: ${text.length}, hasCustomPrompt: ${!!customPrompt}`);
     try {
         if (!process.env.GOOGLE_AI_API_KEY) {
+            console.log(`❌ [AI] Google AI API key not configured`);
             throw new Error("Google AI API key not configured");
         }
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro-latest" });
+        console.log(`🔧 [AI] Initializing Gemini model...`);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         const defaultPrompt = "Please provide a clear, structured summary of the following text. Focus on key points, main ideas, and important details.";
         const prompt = customPrompt || defaultPrompt;
         const fullPrompt = `${prompt}\n\nText to summarize:\n${text}`;
+        console.log(`📝 [AI] Prompt prepared, total length: ${fullPrompt.length}`);
+        console.log(`🚀 [AI] Sending request to Google AI...`);
         const result = await retryWithBackoff(async () => {
             return await model.generateContent(fullPrompt);
         });
+        console.log(`📥 [AI] Received response from Google AI`);
         const response = await result.response;
         const summary = response.text();
+        console.log(`✅ [AI] Summary generated successfully, length: ${summary.length}`);
         return summary || "Unable to generate summary at this time.";
     }
     catch (error) {
-        console.error("AI Summary generation error:", error);
+        console.error("❌ [AI] AI Summary generation error:", error);
         // Handle specific quota errors
         if (error.status === 429) {
             return "⚠️ AI service is currently busy. Please try again in a few minutes, or use the fallback summary below.\n\n" +
@@ -56,12 +63,18 @@ const generateSummary = async (text, customPrompt) => {
 };
 // 📌 Upload and summarize text
 const uploadSummary = async (req, res) => {
+    console.log(`🚀 [UPLOAD] Starting summary generation for file: ${req.body.filename}`);
     try {
         const { text, filename, customPrompt } = req.body;
+        console.log(`📊 [UPLOAD] Request data - filename: ${filename}, textLength: ${text?.length || 0}, customPrompt: ${customPrompt || 'none'}`);
         if (!text || !filename) {
+            console.log(`❌ [UPLOAD] Validation failed - text: ${!!text}, filename: ${!!filename}`);
             return res.status(400).json({ message: "Text and filename are required" });
         }
+        console.log(`🤖 [UPLOAD] Starting AI summary generation...`);
         const summary = await generateSummary(text, customPrompt);
+        console.log(`✅ [UPLOAD] AI summary generated successfully, length: ${summary.length}`);
+        console.log(`💾 [UPLOAD] Saving summary to database...`);
         const newSummary = new Summary_1.default({
             filename,
             summary,
@@ -69,6 +82,8 @@ const uploadSummary = async (req, res) => {
             customPrompt: customPrompt || null
         });
         await newSummary.save();
+        console.log(`✅ [UPLOAD] Summary saved to database with ID: ${newSummary._id}`);
+        console.log(`📤 [UPLOAD] Sending success response`);
         res.status(201).json({
             success: true,
             summary: newSummary,
@@ -76,7 +91,7 @@ const uploadSummary = async (req, res) => {
         });
     }
     catch (error) {
-        console.error("Upload summary error:", error);
+        console.error("❌ [UPLOAD] Upload summary error:", error);
         res.status(500).json({
             success: false,
             message: "Error uploading summary",
@@ -87,8 +102,10 @@ const uploadSummary = async (req, res) => {
 exports.uploadSummary = uploadSummary;
 // 📌 Get all summaries
 const getSummaries = async (_req, res) => {
+    console.log(`📋 [GET] Fetching all summaries from database...`);
     try {
         const summaries = await Summary_1.default.find().sort({ createdAt: -1 });
+        console.log(`✅ [GET] Found ${summaries.length} summaries in database`);
         res.json({
             success: true,
             summaries,
@@ -96,7 +113,7 @@ const getSummaries = async (_req, res) => {
         });
     }
     catch (error) {
-        console.error("Get summaries error:", error);
+        console.error("❌ [GET] Get summaries error:", error);
         res.status(500).json({
             success: false,
             message: "Error fetching summaries",
