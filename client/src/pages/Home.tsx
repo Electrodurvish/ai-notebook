@@ -4,6 +4,7 @@ import UploadForm from "../components/UploadForm";
 import ShareForm from "../components/shareform";
 import SummaryList from "../components/SummaryList";
 import SummaryEditor from "../components/summaryeditor"; // Assuming you will create this component
+import { API_ENDPOINTS } from "../config/api";
 
 interface Summary {
   _id: string;
@@ -18,15 +19,20 @@ function Home() {
   const [selectedSummary, setSelectedSummary] = useState<Summary | null>(null);
   const [summaries, setSummaries] = useState<Summary[]>([]);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchSummaries = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/summary");
+      const response = await axios.get(API_ENDPOINTS.SUMMARY.GET_ALL);
       if (response.data.success) {
         setSummaries(response.data.summaries);
       }
     } catch (error) {
       console.error("Failed to fetch summaries:", error);
+      // Don't let API errors break the UI
+      setSummaries([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -43,6 +49,17 @@ function Home() {
     setSelectedSummary(summary);
     setRefreshTrigger(prev => prev + 1);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

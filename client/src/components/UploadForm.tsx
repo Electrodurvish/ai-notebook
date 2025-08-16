@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import axios from "axios";
+import { API_ENDPOINTS } from "../config/api";
 
 interface Summary {
   _id: string;
@@ -72,7 +73,7 @@ function UploadForm({ onSummaryGenerated }: UploadFormProps) {
     setError("");
 
     try {
-      const response = await axios.post("http://localhost:5000/api/summary/upload", {
+      const response = await axios.post(API_ENDPOINTS.SUMMARY.UPLOAD, {
         text: text.trim(),
         filename: filename.trim(),
         customPrompt: customPrompt.trim() || undefined,

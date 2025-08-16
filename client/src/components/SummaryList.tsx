@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { API_ENDPOINTS } from "../config/api";
 
 interface Summary {
   _id: string;
@@ -27,7 +28,7 @@ function SummaryList({ onSummarySelected, refreshTrigger }: SummaryListProps) {
     setError("");
 
     try {
-      const response = await axios.get("http://localhost:5000/api/summary");
+      const response = await axios.get(API_ENDPOINTS.SUMMARY.GET_ALL);
       
       if (response.data.success) {
         setSummaries(response.data.summaries);
@@ -52,7 +53,7 @@ function SummaryList({ onSummarySelected, refreshTrigger }: SummaryListProps) {
 
   const handleView = (summary: Summary) => {
     onSummarySelected(summary);
-    navigate("/view", { state: { summary } });
+    navigate("/editor", { state: { summary } });
   };
 
   if (isLoading) {

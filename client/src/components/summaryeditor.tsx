@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { API_ENDPOINTS } from "../config/api";
 
 interface Summary {
   _id: string;
@@ -38,7 +39,7 @@ function SummaryEditor({ summary, onSummaryUpdated }: SummaryEditorProps) {
     setSuccess("");
 
     try {
-      const response = await axios.put("http://localhost:5000/api/summary/update", {
+      const response = await axios.put(API_ENDPOINTS.SUMMARY.UPDATE, {
         summaryId: summary._id,
         updatedSummary: editedSummary,
       });
@@ -82,7 +83,7 @@ function SummaryEditor({ summary, onSummaryUpdated }: SummaryEditorProps) {
     setSuccess("");
 
     try {
-      const response = await axios.delete(`http://localhost:5000/api/summary/delete/${summary._id}`);
+      const response = await axios.delete(API_ENDPOINTS.SUMMARY.DELETE(summary._id));
 
       if (response.data.success) {
         setSuccess("Summary deleted successfully!");
