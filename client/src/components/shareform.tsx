@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import { API_ENDPOINTS } from "../config/api";
 
 interface Summary {
   _id: string;
@@ -40,7 +41,7 @@ function ShareForm({ summaries }: ShareFormProps) {
     setSuccess("");
 
     try {
-      const response = await axios.post("http://localhost:5000/api/summary/share", {
+      const response = await axios.post(API_ENDPOINTS.SUMMARY.SHARE, {
         email: email.trim(),
         summaryId,
         customMessage: customMessage.trim() || undefined,
